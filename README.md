@@ -13,7 +13,10 @@ Completed Goals.
 
 -Scrape all NBA teams currently active with their abbreviations. (Completed,September 19,2019)
 
+- Verify the correct type of data is there (Completed, September 22,2019)
+
+- Graph Lebron James points scored against all 30 teams on the x axis with dots or teams respective logos. (Moved to a Javascript implementation,22,2019)
+
 Current Goals:
 - Verify the data is correct with some PyTest
-- Verify the correct type of data is there
-- Graph Lebron James points scored against all 30 teams on the x axis with dots or teams respective logos.
+- Implement a NodeJS with Chart.js implementation for the data.
