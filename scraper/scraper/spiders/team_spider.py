@@ -1,15 +1,33 @@
 import scrapy
 import re
 
+import pymongo
+from pymongo import InsertOne, DeleteMany, ReplaceOne, UpdateOne
+
 #Commands
 #scrapy shell "https://www.basketball-reference.com/teams/"
+
 
 class GamelogSpider(scrapy.Spider):
     name = "team"
     download_delay = 0.5
     currentseason = ""
 
+    password = ""
+    uri = ""
+    client = ""
+    db = ""
+
     def start_requests(self):
+        password = input("Password: ")
+        uri = "mongodb+srv://kevin:"+password+"@cluster0-focx3.mongodb.net/test?retryWrites=true&w=majority"
+        client = pymongo.MongoClient(uri)
+        db = client.NBA_Match_Ups.Teams
+
+        db.bulk_write([
+            DeleteMany({}),  # Remove all documents
+        ])
+
         urls = [  # List of Urls to go through
             "https://www.basketball-reference.com/teams/"
         ]
@@ -40,7 +58,8 @@ class GamelogSpider(scrapy.Spider):
         s = response.url.split("/")
 
         if (int(lastYear) >= ceiling):
-            yield{
+            team ={
                 "teamName" : teamName,
                 "abbreviation" : s[-2]
             }
+            db.insert_one(team)

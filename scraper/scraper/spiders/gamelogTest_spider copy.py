@@ -1,21 +1,37 @@
 import scrapy
 import pymongo
 import re
+
+from pymongo import InsertOne, DeleteMany, ReplaceOne, UpdateOne
 from bson.json_util import dumps
 
 #Commands
 #scrapy shell 'https://www.basketball-reference.com/players/'
 
+
 class GamelogSpider(scrapy.Spider):
-    name = "gamelog" #Name of Crawler
+    name = "gamelogTest" #Name of Crawler
     download_delay = 0.5
     currentseason = ""
 
-    uri = "mongodb+srv://tempReader:tempPassword@cluster0-focx3.mongodb.net/test?retryWrites=true&w=majority"
-    client = pymongo.MongoClient(uri)
-    db = client.NBA_Match_Ups
+    password = None
+    uri = None
+    client = None
+    db = None
 
     def start_requests(self):
+
+        password = input("GameLog Password: ")
+        uri = "mongodb+srv://kevin:"+password+"@cluster0-focx3.mongodb.net/test?retryWrites=true&w=majority"
+        client = pymongo.MongoClient(uri)
+        db = client.NBA_Match_Ups
+        dbTest = db.test
+
+        dbTest.bulk_write([
+        DeleteMany({}),  # Remove all documents
+        ])
+
+
         players = db.Players.find({},{'basketballreference_page':1, "_id": 0}) #Project only the url of basketball reference page
         listOfUrls = [] #Empty List
         for document in players: #For loop to go through the entire Cursor
@@ -55,8 +71,9 @@ class GamelogSpider(scrapy.Spider):
         #Points
         pts = response.xpath('//tr[contains(@id,"pgl")]//td[contains(@data-stat,"pts")]//text()').getall()
         #For each Yield
+        gamelogsList =[]
         for i in range (numGamesPlayed):
-            yield{
+            game= {
                 "name" : name,
                 "year" : year,
                 "game" : i+1,
@@ -67,4 +84,7 @@ class GamelogSpider(scrapy.Spider):
                 "minutes" : mp[i],
                 "fg_pct" : float(fg_pct[i])
             }
+            gamelogsList.append(game)
+        dbTest.insert_many(gamelogsList)
+
 
